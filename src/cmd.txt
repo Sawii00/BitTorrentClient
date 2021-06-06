@@ -1,0 +1,1 @@
+g++ -g -pthread -latomic -Wall -I../include/ main.cpp thpool.cpp torrent.cpp utils.cpp sha.cpp bencode.cpp
