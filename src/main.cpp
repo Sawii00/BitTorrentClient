@@ -29,12 +29,16 @@ TODO:
 	- test multiple requests to different peers
 
 PROBLEMS:
-	-------> Last pieces are shit and we get stuck
 */
 
 int main(int argc, char** argv)
 {
     
+    if (argc != 2)
+    {
+        std::cerr << "Invalid Usage: .torrent is missing\n";
+        exit(-1);
+    }
 	signal(SIGPIPE, SIG_IGN);
 
     std::thread thread_object([](const char* torrent_name)
@@ -52,7 +56,7 @@ int main(int argc, char** argv)
             exit(1);
         }
         start_torrent(&main_torrent);
-    }, "test.torrent");
+    }, argv[1]); 
 
     thread_object.join();
     std::cout << "Exiting application\n";

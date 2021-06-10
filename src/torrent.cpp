@@ -791,7 +791,7 @@ u32 n_of_blocks = (u32)ceil((float)main_torrent->piece_size / (1 << 14));
 	std::thread request_manager_thread([&]()
     {
 
-        sleep(10);
+        sleep(3);
 
         while(run)
         {
@@ -857,7 +857,7 @@ u32 n_of_blocks = (u32)ceil((float)main_torrent->piece_size / (1 << 14));
                 clock_gettime(CLOCK_REALTIME, &curr_time);
 
                 u32 elapsed_time = get_elapsed_milliseconds(&curr_time, &main_torrent->buffered_pieces[i].last_request);
-                if(elapsed_time < REQUEST_TIMEOUT)
+                if(elapsed_time < REQUEST_TIMEOUT / 5)
                 {
                 	continue;
                 }
@@ -912,7 +912,7 @@ u32 n_of_blocks = (u32)ceil((float)main_torrent->piece_size / (1 << 14));
                         clock_gettime(CLOCK_REALTIME, &begin);
 
 
-                        if(p.is_choking == false && !(--rand_peer) && get_elapsed_milliseconds(&begin, &p.timestamp) > 300)
+                        if(p.is_choking == false && !(--rand_peer) && get_elapsed_milliseconds(&begin, &p.timestamp) > 500)
                         {
 
                             bool quitting = false;
@@ -926,8 +926,8 @@ u32 n_of_blocks = (u32)ceil((float)main_torrent->piece_size / (1 << 14));
                                     
                             }
 
-                            if(quitting)
-                            	continue;
+                            //if(quitting)
+                            //	continue;
                            
                         	std::cout << "REQUEST: " << min_id << "to "<<p.sock<<'\n';
                             if(bitfield_is_set(main_torrent->bitfield, min_id))
@@ -1016,11 +1016,8 @@ u32 n_of_blocks = (u32)ceil((float)main_torrent->piece_size / (1 << 14));
         std::cout << "\n\n\nTORRENT IS COMPLETE\n\n\n\n\n";
         stop_torrent(69);
 
-        thpool_wait(main_torrent->thpool);
-        thpool_destroy(main_torrent->thpool);
-
         decode_file(main_torrent);
-
+        exit(1);
 
     }); 
 
@@ -1058,14 +1055,14 @@ u32 n_of_blocks = (u32)ceil((float)main_torrent->piece_size / (1 << 14));
 
 
         i32 sel = select(max + 1, &actual_set, NULL, NULL, &timeout);
-        timeout.tv_sec = 1;
+        timeout.tv_sec = 3;
         timeout.tv_usec = 0;
 
         if(sel <= 0)
         {
             if (sel < 0)
             {
-            	perror("SELECT IS DUMB: ");
+            	perror("SELECT error: ");
 
             }
             continue;
@@ -1282,7 +1279,7 @@ void handle_mex(void* p, void* t)
 		}
         index = htobe32(index);
         begin = htobe32(begin);
-        std::cout << "PIECE: msg_length: " << msg_length<< ", index: " << index << ", begin: " << begin<<'\n';
+        //std::cout << "PIECE: msg_length: " << msg_length<< ", index: " << index << ", begin: " << begin<<'\n';
         i32 piece_id = -1;
         for(u32 i = 0; i < TORRENT_BUFFER_SIZE; ++i)
         {
@@ -1315,13 +1312,13 @@ void handle_mex(void* p, void* t)
         read = 0;
         //is the lock useful?
         t_ptr->buffered_pieces[piece_id].lock.lock();
-        bool res = correct_read(p_ptr->sock, t_ptr->buffered_pieces[piece_id].buffer + begin, msg_length, 2);
+        bool res = correct_read(p_ptr->sock, t_ptr->buffered_pieces[piece_id].buffer + begin, msg_length, 5);
         if(!res)
 		{
 			perror("Piece Error: ");
 			std::cerr << "Piece_ID: "<<piece_id << " begin: " << begin << " read: " << read << '\n';
-			close(p_ptr->sock);
-			p_ptr->sock = -1;
+			//close(p_ptr->sock);
+			//p_ptr->sock = -1;
 			return;
 		}
 

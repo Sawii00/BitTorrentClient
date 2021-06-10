@@ -1,1 +1,5 @@
 *.torrent
+.metadata/
+*.zip
+*.out
+tmp

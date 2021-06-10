@@ -211,7 +211,6 @@ void thpool_wait(struct thpool_* thpool_p){
 void thpool_destroy(struct thpool_* thpool_p){
 	/* No need to destory if it's NULL */
 	if (thpool_p == NULL) return ;
-
 	volatile int threads_total = thpool_p->num_threads_alive;
 
 	/* End each thread 's infinite loop */
